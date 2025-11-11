@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Vote{% endblock %}
+
+{% block content %}
+<div class="vote-container">
+    <h1>Cast Your Vote</h1>
+
+    {% if current_user.has_voted %}
+        <p style="color: green;">You have already voted. Thank you!</p>
+    {% else %}
+        <div class="camera-container mb-3">
+            <video id="video" width="400" height="300" autoplay muted playsinline></video>
+            <canvas id="canvas" width="400" height="300"></canvas>
+            <p id="status" style="color:red;">Initializing camera...</p>
+        </div>
+
+        <form method="POST" id="voteForm">
+            <h3>Select a Candidate:</h3>
+            {% for candidate in candidates %}
+            <div class="candidate-option">
+                <input type="radio" id="candidate_{{ loop.index }}" name="candidate" value="{{ candidate.name }}" required>
+                <label for="candidate_{{ loop.index }}">{{ candidate.name }}</label>
+            </div>
+            {% endfor %}
+
+            <input type="hidden" name="photo" id="photoData">
+            <button type="submit" id="voteButton" disabled>Submit Vote</button>
+        </form>
+    {% endif %}
+</div>
+
+<!-- ✅ MediaPipe Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const status = document.getElementById('status');
+const voteButton = document.getElementById('voteButton');
+const photoInput = document.getElementById('photoData');
+
+// ✅ Ask for camera access first
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    video.srcObject = stream;
+    video.play();
+    status.innerText = "Camera initialized. Detecting face...";
+  })
+  .catch(err => {
+    status.innerText = "❌ Unable to access camera: " + err.name;
+    status.style.color = "red";
+  });
+
+// ✅ Initialize MediaPipe Face Detection (correct syntax)
+const faceDetection = new FaceDetection({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
+});
+
+faceDetection.setOptions({
+  model: 'short',
+  minDetectionConfidence: 0.7
+});
+
+faceDetection.onResults(onResults);
+
+// ✅ Draw results on canvas
+function onResults(results) {
+  ctx.save();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+  const faces = results.detections || [];
+
+  if (faces.length === 1) {
+    voteButton.disabled = false;
+    status.innerText = "✅ One person detected. You can vote!";
+    status.style.color = "green";
+  } else if (faces.length === 0) {
+    voteButton.disabled = true;
+    status.innerText = "❌ No face detected. Please step in front of the camera.";
+    status.style.color = "red";
+  } else {
+    voteButton.disabled = true;
+    status.innerText = "⚠️ Multiple faces detected. Only one person allowed!";
+    status.style.color = "red";
+  }
+
+  // Optional: Draw face boxes
+  for (const detection of faces) {
+    DrawingUtils.drawDetection(ctx, detection);
+  }
+
+  ctx.restore();
+}
+
+// ✅ Start MediaPipe camera once ready
+const camera = new Camera(video, {
+  onFrame: async () => {
+    await faceDetection.send({ image: video });
+  },
+  width: 400,
+  height: 300
+});
+
+camera.start();
+
+// ✅ Capture photo before form submission
+document.getElementById("voteForm").addEventListener("submit", function(e) {
+  if (!voteButton.disabled) {
+    const imageData = canvas.toDataURL("image/png");
+    photoInput.value = imageData;
+  } else {
+    e.preventDefault();
+    alert("Face not detected correctly. Please ensure only one face is visible before voting.");
+  }
+});
+</script>
+{% endblock %}

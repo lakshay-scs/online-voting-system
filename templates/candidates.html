@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Manage Candidates{% endblock %}
+
+{% block content %}
+<div class="admin-page-container">
+  <h1>Manage Candidates</h1>
+
+  <!-- Add Candidate Form -->
+  <form id="addCandidateForm" method="POST" action="{{ url_for('manage_candidates') }}" style="margin-bottom: 20px;">
+    <input type="text" name="name" id="candidateName" placeholder="Enter candidate name" required>
+    <button type="submit">Save</button>
+  </form>
+
+  <!-- Candidate Table -->
+  <div id="candidateTableWrapper">
+    <h2>Candidate List</h2>
+    <table id="candidateTable" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background-color:rgba(255,255,255,0.2);">
+          <th>Candidate Name</th>
+          <th style="width:180px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for candidate in candidates %}
+        <tr data-id="{{ candidate.id }}" data-name="{{ candidate.name|tojson }}">
+          <td class="candidate-name">{{ candidate.name }}</td>
+          <td>
+            <button class="edit-btn">Rename</button>
+            <button class="delete-btn">Delete</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if not candidates %}
+    <p id="noCandidatesMsg">No candidates yet. Add one above.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("addCandidateForm");
+  const input = document.getElementById("candidateName");
+  const tableBody = document.querySelector("#candidateTable tbody");
+
+  // Add new candidate
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = input.value.trim();
+    if (!name) return;
+
+    try {
+      const res = await fetch("{{ url_for('manage_candidates') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ name }),
+      });
+
+      if (!res.ok) throw new Error();
+      const newCand = await res.json();
+
+      addRow(newCand.id, newCand.name);
+      input.value = "";
+      const msg = document.getElementById("noCandidatesMsg");
+      if (msg) msg.style.display = "none";
+    } catch {
+      alert("Error adding candidate.");
+    }
+  });
+
+  // Add table row
+  function addRow(id, name) {
+    const row = document.createElement("tr");
+    row.dataset.id = id;
+    row.dataset.name = name;
+    row.innerHTML = `
+      <td class="candidate-name">${name}</td>
+      <td>
+        <button class="edit-btn">Rename</button>
+        <button class="delete-btn">Delete</button>
+      </td>`;
+    tableBody.appendChild(row);
+  }
+
+  // Handle clicks for rename & delete
+  tableBody.addEventListener("click", async (e) => {
+    const row = e.target.closest("tr");
+    if (!row) return;
+    const id = row.dataset.id;
+
+    // Delete
+    if (e.target.classList.contains("delete-btn")) {
+      if (!confirm("Delete this candidate?")) return;
+      try {
+        const res = await fetch(`/delete_candidate/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error();
+        row.remove();
+        if (!tableBody.querySelector("tr")) {
+          document.getElementById("noCandidatesMsg").style.display = "block";
+        }
+      } catch {
+        alert("Failed to delete candidate.");
+      }
+    }
+
+    // Rename
+    if (e.target.classList.contains("edit-btn")) {
+      const oldName = row.dataset.name;
+      const newName = prompt("Enter new name:", oldName);
+      if (!newName || newName === oldName) return;
+
+      try {
+        const res = await fetch(`/edit_candidate/${id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ name: newName }),
+        });
+        if (!res.ok) throw new Error();
+        row.querySelector(".candidate-name").textContent = newName;
+        row.dataset.name = newName;
+      } catch {
+        alert("Failed to rename candidate.");
+      }
+    }
+  });
+});
+</script>
+
+<style>
+.admin-page-container {
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 30px;
+  border-radius: 10px;
+  color: white;
+  max-width: 700px;
+  margin: 50px auto;
+}
+table {
+  width: 100%;
+  background-color: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  text-align: left;
+}
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+th {
+  background-color: rgba(255,255,255,0.2);
+}
+input[type="text"] {
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+button {
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover { opacity: 0.8; }
+.edit-btn { background-color: #ffc107; margin-right: 8px; }
+.delete-btn { background-color: #dc3545; }
+</style>
+{% endblock %}

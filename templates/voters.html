@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Manage Voters{% endblock %}
+
+{% block content %}
+<div class="admin-page-container" style="max-height:80vh; overflow-y:auto; padding:20px;">
+    <h1>Manage Voters</h1>
+
+    <input type="text" id="searchInput" placeholder="Search by username..." style="margin-bottom:10px; width:100%; padding:5px;">
+
+    <div class="table-wrapper" style="overflow-x:auto;">
+        <table id="votersTable" border="1" cellpadding="5" cellspacing="0" style="width:100%;">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Username ⬍</th>
+                    <th onclick="sortTable(1)">Has Voted ⬍</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for voter in voters %}
+                <tr>
+                    <td>{{ voter.username }}</td>
+                    <td>{{ "Yes" if voter.has_voted else "No" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top:20px;">
+        <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a> |
+        <a href="{{ url_for('manage_candidates') }}">Manage Candidates</a>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById("searchInput");
+    searchInput.addEventListener("keyup", function() {
+        const filter = searchInput.value.toLowerCase();
+        const rows = document.querySelectorAll("#votersTable tbody tr");
+        rows.forEach(row => {
+            const username = row.cells[0].textContent.toLowerCase();
+            row.style.display = username.includes(filter) ? "" : "none";
+        });
+    });
+
+    function sortTable(columnIndex) {
+        const table = document.getElementById("votersTable");
+        let switching = true, direction = "asc", switchCount = 0;
+        while (switching) {
+            switching = false;
+            const rows = table.rows;
+            for (let i = 1; i < rows.length - 1; i++) {
+                let shouldSwitch = false;
+                const x = rows[i].getElementsByTagName("TD")[columnIndex];
+                const y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+                if (!x || !y) continue;
+                let xVal = x.textContent.toLowerCase();
+                let yVal = y.textContent.toLowerCase();
+                if ((direction === "asc" && xVal > yVal) || (direction === "desc" && xVal < yVal)) {
+                    shouldSwitch = true; break;
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true; switchCount++;
+            } else if (switchCount === 0 && direction === "asc") {
+                direction = "desc"; switching = true;
+            }
+        }
+    }
+</script>
+{% endblock %}

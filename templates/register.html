@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<h1 style="color:white; margin-bottom:30px;">Register</h1>
+<form method="POST" style="display:flex; flex-direction:column; gap:15px; width:300px;">
+    <input type="text" name="username" placeholder="Username" required style="padding:10px; border-radius:5px; border:none;">
+    <input type="password" name="password" placeholder="Password" required style="padding:10px; border-radius:5px; border:none;">
+    <button type="submit" style="padding:10px; border:none; border-radius:5px; background:#17a2b8; color:white; cursor:pointer;">Register</button>
+</form>
+<p style="color:white; margin-top:20px;">Already have an account? <a href="{{ url_for('login_page') }}" style="color:#ffc107;">Login</a></p>
+{% endblock %}

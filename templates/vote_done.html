@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Vote Submitted{% endblock %}
+
+{% block content %}
+<h1 style="color:white; margin-bottom:20px;">Thank you, {{ current_user.username }}!</h1>
+<p style="color:white;">You have already submitted your vote.</p>
+<a href="{{ url_for('logout_page') }}" style="padding:10px 20px; background:#6c757d; color:white; border-radius:5px; text-decoration:none; margin-top:20px; display:inline-block;">Logout</a>
+{% endblock %}

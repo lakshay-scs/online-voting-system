@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Results{% endblock %}
+
+{% block content %}
+<h1 style="color:rgb(224, 142, 142); margin-bottom:30px;">Voting Results</h1>
+<table style="background: rgba(255,255,255,0.2); color:white; border-radius:10px; padding:20px; width:50%; text-align:center;">
+    <tr>
+        <th>Candidate</th>
+        <th>Votes</th>
+    </tr>
+    {% for candidate, votes in count.items() %}
+    <tr>
+        <td>{{ candidate }}</td>
+        <td>{{ votes }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

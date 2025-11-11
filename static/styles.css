@@ -1,0 +1,106 @@
+/* ---------- General ---------- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    margin: 0;
+    padding: 0;
+    color: #343a40;
+    overflow-x: hidden; /* prevent horizontal scroll on body */
+}
+
+/* ---------- Admin Page Container ---------- */
+.admin-page-container {
+    padding: 20px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ---------- Headers ---------- */
+h1, h2 {
+    text-align: center;
+    color: #495057;
+}
+
+/* ---------- Table Wrapper ---------- */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;  /* allows horizontal scroll if table too wide */
+    margin-top: 10px;
+}
+
+#voterTable {
+    width: 100%;
+    min-width: 800px; /* prevent table from collapsing */
+    border-collapse: collapse;
+}
+
+#voterTable th, #voterTable td {
+    padding: 10px;
+    text-align: center;
+    color: #ccc;
+}
+
+#voterTable th {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    cursor: pointer;
+}
+
+/* ---------- Modal ---------- */
+#photoModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+#photoModal img {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 10px;
+}
+
+#photoModal span {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+}
+
+/* ---------- Search Input ---------- */
+#searchInput {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ced4da;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* ---------- Photo Thumbnails ---------- */
+#voterTable img {
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    width: 70px;
+    height: 70px;
+}
+
+/* ---------- Scrollbars for table wrapper (optional) ---------- */
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(108,99,255,0.5);
+    border-radius: 4px;
+}
